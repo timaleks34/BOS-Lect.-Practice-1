@@ -9,3 +9,13 @@ print()
   echo "-e, --errors PATH - Замещение вывода ошибок из потока stderr в файл по пути PATH"
 }
 
+users()
+{
+  getent passwd | awk '{print NR,$0}' | sort
+}
+
+process()
+{
+  ps -e -o pid | sort
+}
+
