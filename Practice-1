@@ -1,5 +1,7 @@
 #!/bin/bash
 
+OPTSTRING="upl:e:h-"
+
 print()
 {
   echo "-u, --users - Вывод пользователей и их домашних директорий"
@@ -19,3 +21,33 @@ process()
   ps -e -o pid | sort
 }
 
+path()
+{
+  local path="$1"
+  if [[! -w "$path"]];
+  then
+    echo "Нет доступа к файлу $path" >$2
+    exit 1
+  fi
+}
+
+while getopts ${OPTSTRING} opt; do
+  case ${opt} in
+  u)
+      users
+      ;;
+  p)
+      process
+      ;;
+  l)
+      LOGI=${OPTARG}
+      path ${LOGI}
+      ;;
+  e)
+      ERRO=${OPTARG}
+      path ${ERRO}
+      ;;
+  h)
+      print
+      exit 0
+      ;;
