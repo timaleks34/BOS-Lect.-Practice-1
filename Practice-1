@@ -13,7 +13,7 @@ print()
 
 users()
 {
-  getent passwd | awk '{print NR,$0}' | sort
+  awk -F: '$3 >= 1000 {print $1 "\t" $6}' /etc/passwd | sort
 }
 
 process()
@@ -24,30 +24,74 @@ process()
 path()
 {
   local path="$1"
-  if [[! -w "$path"]];
-  then
+  if [[ ! -w "$path" ]]; then
     echo "Нет доступа к файлу $path" >$2
     exit 1
   fi
 }
 
 while getopts ${OPTSTRING} opt; do
-  case ${opt} in
-  u)
-      users
-      ;;
-  p)
-      process
-      ;;
-  l)
-      LOGI=${OPTARG}
-      path ${LOGI}
-      ;;
-  e)
-      ERRO=${OPTARG}
-      path ${ERRO}
-      ;;
-  h)
-      print
-      exit 0
-      ;;
+    case ${opt} in
+    u)
+        users
+        ;;
+    p)
+        process
+        ;;
+    l)
+        LOGI=${OPTARG}
+        path ${LOGI}
+        ;;
+    e)
+        ERRO=${OPTARG}
+        path ${ERRO}
+        ;;
+    h)
+        print
+        exit 0
+        ;;
+    -)
+        case "$OPTARG" in
+          users)
+                users
+                ;;
+          process)
+                process
+                ;;
+          help)
+                print
+                exit 0
+                ;;
+          log)
+                LOGI="${!OPTIND}"; OPTIND=$((OPTIND+1))
+                path "$LOGI"
+                ;;
+          error)
+                ERRO="${!OPTIND}"; OPTIND=$((OPTIND+1))
+                path "$ERRO"
+                ;;
+          *)
+                echo "Неизвестная функция -$OPTARG" >&2
+                print
+                exit 1
+                ;;
+        esac
+        ;;
+
+    *)
+        echo "Неизвестная функция -$OPTARG" >&2
+        print
+        exit 1
+        ;;
+  esac
+done
+
+if [[ -n "$LOGI" ]]; then
+  {
+    users
+    process
+  } >> "$LOGI" 2>&1
+fi
+if [[ -n "$ERRO" ]]; then
+  echo "Без ошибок" >> "$ERRO"
+fi
