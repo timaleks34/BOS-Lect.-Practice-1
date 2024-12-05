@@ -16,7 +16,7 @@ users()
 
 process()
 {
-  ps -e -o pid | sort
+  ps -e -o pid,cmd,start --sort=pid
 }
 
 path()
