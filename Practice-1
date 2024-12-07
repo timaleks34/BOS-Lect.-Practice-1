@@ -24,6 +24,9 @@ path()
   local path="$1"
   if [[ ! -w "$path" ]]; then
     echo "Нет доступа к файлу $path" >&2
+    if [ -n "$ERRO" ]; then
+      echo "Ошибка записи в файл $path" >> "$ERRO"
+    fi
     exit 1
   fi
 }
@@ -70,6 +73,9 @@ while getopts "upl:e:h-:" opt; do
                 ;;
           *)
                 echo "Неизвестная функция --${OPTARG}" >&2
+                if [ -n "$ERRO" ]; then
+                  echo "Неизвестная функция --${OPTARG}" >> "$ERRO"
+                fi
                 print
                 exit 1
                 ;;
@@ -78,6 +84,9 @@ while getopts "upl:e:h-:" opt; do
 
     *)
         echo "Неизвестная функция -${OPTARG}" >&2
+        if [ -n "$ERRO" ]; then
+          echo "Неизвестная функция -${OPTARG}" >> "$ERRO"
+        fi
         print
         exit 1
         ;;
@@ -91,5 +100,7 @@ if [[ -n "$LOGI" ]]; then
   } >> "$LOGI" 2>&1
 fi
 if [[ -n "$ERRO" ]]; then
-  echo "Без ошибок" >> "$ERRO"
+  if [[ ! -s "$ERRO" ]]; then
+    echo "Без ошибок" >> "$ERRO"
+  fi
 fi
